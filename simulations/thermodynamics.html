@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Thermodynamics Simulation</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: #0a0a0a;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #00ffc8;
+      margin-bottom: 10px;
+    }
+
+    .container {
+      border: 2px solid #00ffc8;
+      width: 400px;
+      height: 300px;
+      margin: 20px auto;
+      position: relative;
+      background: #111;
+      overflow: hidden;
+      border-radius: 10px;
+    }
+
+    .particle {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #00ffc8;
+      position: absolute;
+    }
+
+    .controls {
+      max-width: 500px;
+      margin: 30px auto;
+      text-align: left;
+    }
+
+    .control-group {
+      margin-bottom: 15px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    .info {
+      margin-top: 30px;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌡️ Thermodynamics Simulation</h1>
+  <p>Visualize the Ideal Gas Law: <strong>PV = nRT</strong></p>
+
+  <div class="container" id="gasBox"></div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label for="temperature">Temperature (K): <span id="tempVal">300</span></label>
+      <input type="range" id="temperature" min="100" max="800" value="300">
+    </div>
+    <div class="control-group">
+      <label for="volume">Volume (L): <span id="volVal">1.0</span></label>
+      <input type="range" id="volume" min="0.5" max="2.0" step="0.1" value="1.0">
+    </div>
+  </div>
+
+  <div class="info">
+    Pressure: <span id="pressure">1.00</span> atm
+  </div>
+
+  <script>
+    const gasBox = document.getElementById('gasBox');
+    const tempSlider = document.getElementById('temperature');
+    const volSlider = document.getElementById('volume');
+    const tempVal = document.getElementById('tempVal');
+    const volVal = document.getElementById('volVal');
+    const pressureDisplay = document.getElementById('pressure');
+
+    const particles = [];
+    const numParticles = 30;
+    const R = 0.0821; // Ideal gas constant in atm·L/mol·K
+    const n = 1; // moles
+
+    function createParticles() {
+      for (let i = 0; i < numParticles; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        particle.x = Math.random() * 390;
+        particle.y = Math.random() * 290;
+        particle.vx = (Math.random() - 0.5) * 2;
+        particle.vy = (Math.random() - 0.5) * 2;
+        gasBox.appendChild(particle);
+        particles.push(particle);
+      }
+    }
+
+    function updateParticles(temperature) {
+      const speedMultiplier = Math.sqrt(temperature / 300);
+      particles.forEach(p => {
+        p.x += p.vx * speedMultiplier;
+        p.y += p.vy * speedMultiplier;
+
+        if (p.x <= 0 || p.x >= 392) p.vx *= -1;
+        if (p.y <= 0 || p.y >= 292) p.vy *= -1;
+
+        p.style.left = `${p.x}px`;
+        p.style.top = `${p.y}px`;
+      });
+    }
+
+    function animate() {
+      const T = parseFloat(tempSlider.value);
+      updateParticles(T);
+      requestAnimationFrame(animate);
+    }
+
+    function updateValues() {
+      const T = parseFloat(tempSlider.value);
+      const V = parseFloat(volSlider.value);
+      const P = ((n * R * T) / V).toFixed(2);
+
+      tempVal.textContent = T;
+      volVal.textContent = V;
+      pressureDisplay.textContent = P;
+    }
+
+    tempSlider.addEventListener('input', updateValues);
+    volSlider.addEventListener('input', updateValues);
+
+    createParticles();
+    updateValues();
+    animate();
+  </script>
+</body>
+</html>

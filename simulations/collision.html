@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>1D Collision with Wall Bounce | MotionVerse</title>
+    <style>
+        body {
+            background: #0f172a;
+            color: #f8fafc;
+            font-family: 'Segoe UI', sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #38bdf8;
+        }
+
+        input {
+            margin: 5px;
+            padding: 5px;
+            width: 70px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            background: #38bdf8;
+            color: #0f172a;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        canvas {
+            background: #1e293b;
+            border: 2px solid #38bdf8;
+            margin-top: 20px;
+        }
+
+        .output {
+            margin-top: 15px;
+            font-size: 1.1rem;
+            color: #facc15;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔁 1D Collision with Wall Bounce - MotionVerse</h1>
+    <div>
+        <label>Mass 1 (kg): <input type="number" id="mass1" value="2" /></label>
+        <label>Velocity 1 (m/s): <input type="number" id="vel1" value="2" /></label>
+        <br />
+        <label>Mass 2 (kg): <input type="number" id="mass2" value="3" /></label>
+        <label>Velocity 2 (m/s): <input type="number" id="vel2" value="-1" /></label>
+        <br />
+        <button onclick="simulate()">Simulate</button>
+        <button onclick="reset()">Reset</button>
+    </div>
+
+    <canvas id="canvas" width="800" height="200"></canvas>
+    <div class="output" id="collisionStatus">No collision yet.</div>
+
+    <script>
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+
+        let box1, box2, animId;
+
+        function simulate() {
+            const m1 = parseFloat(document.getElementById("mass1").value);
+            const m2 = parseFloat(document.getElementById("mass2").value);
+            let v1 = parseFloat(document.getElementById("vel1").value);
+            let v2 = parseFloat(document.getElementById("vel2").value);
+
+            box1 = { x: 100, y: 100, width: 40, color: "#facc15", v: v1, m: m1 };
+            box2 = { x: 600, y: 100, width: 40, color: "#38bdf8", v: v2, m: m2 };
+
+            document.getElementById("collisionStatus").textContent = "Simulating...";
+
+            function update() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                console.log("frame")
+                // Move boxes
+                box1.x += box1.v;
+                box2.x += box2.v;
+
+                // Wall collision
+                if (box1.x <= 0 || box1.x + box1.width >= canvas.width) {
+                    box1.v *= -1;
+                }
+                if (box2.x <= 0 || box2.x + box2.width >= canvas.width) {
+                    box2.v *= -1;
+                }
+
+                // Box collision check
+                if (box1.x + box1.width >= box2.x && box1.v > box2.v) {
+                    const newV1 = ((box1.m - box2.m) / (box1.m + box2.m)) * box1.v + ((2 * box2.m) / (box1.m + box2.m)) * box2.v;
+                    const newV2 = ((box2.m - box1.m) / (box1.m + box2.m)) * box2.v + ((2 * box1.m) / (box1.m + box2.m)) * box1.v;
+                    box1.v = newV1;
+                    box2.v = newV2;
+                    document.getElementById("collisionStatus").textContent = "💥 Collision occurred between boxes!";
+                }
+
+                // Draw boxes
+                ctx.fillStyle = box1.color;
+                ctx.fillRect(box1.x, box1.y - box1.width / 2, box1.width, box1.width);
+                ctx.fillStyle = box2.color;
+                ctx.fillRect(box2.x, box2.y - box2.width / 2, box2.width, box2.width);
+
+                animId = requestAnimationFrame(update);
+            }
+
+            update();
+        }
+
+        function reset() {
+            cancelAnimationFrame(animId);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById("collisionStatus").textContent = "No collision yet.";
+        }
+    </script>
+</body>
+
+</html>

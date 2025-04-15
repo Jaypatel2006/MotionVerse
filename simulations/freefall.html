@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Free Fall - MotionVerse</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #0a0a0a;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    h1 {
+      margin: 20px 0 10px;
+      text-align: center;
+    }
+
+    .controls {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .controls label,
+    .controls input {
+      color: #00ffc8;
+      font-size: 1rem;
+      margin: 0 10px;
+    }
+
+    .controls input[type="range"] {
+      width: 150px;
+    }
+
+    canvas {
+      flex: 1;
+      background: #fff;
+      border-top: 2px solid #00ffc8;
+      border-bottom: 2px solid #00ffc8;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .info-bar {
+      text-align: center;
+      font-size: 1rem;
+      color: #00ffc8;
+      margin: 10px 0;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 10px;
+    }
+
+    .back-btn,
+    .reset-btn {
+      display: inline-block;
+      text-decoration: none;
+      color: #00ffc8;
+      border: 1px solid #00ffc8;
+      padding: 8px 16px;
+      border-radius: 8px;
+      margin: 5px;
+      transition: 0.3s;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .back-btn:hover,
+    .reset-btn:hover {
+      background: #00ffc8;
+      color: #0a0a0a;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌌 Free Fall Simulation</h1>
+
+  <div class="controls">
+    <label for="gravityRange">Gravity: <span id="gravityValue">9.8</span> m/s²</label>
+    <input type="range" id="gravityRange" min="1" max="20" step="0.1" value="9.8">
+    <button class="reset-btn" id="resetBtn">Reset</button>
+  </div>
+
+  <div class="info-bar">
+    Velocity: <span id="velocityDisplay">0.0</span> m/s
+  </div>
+
+  <canvas id="freeFallCanvas"></canvas>
+
+  <div class="footer">
+    <a class="back-btn" href="../index.html">⬅ Back to Menu</a>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("freeFallCanvas");
+    const ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth * 0.8;
+      canvas.height = window.innerHeight * 0.6;
+    }
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    const gravitySlider = document.getElementById("gravityRange");
+    const gravityLabel = document.getElementById("gravityValue");
+    const velocityDisplay = document.getElementById("velocityDisplay");
+    const resetBtn = document.getElementById("resetBtn");
+
+    let ball;
+    let gravity = parseFloat(gravitySlider.value);
+
+    function initBall() {
+      ball = {
+        x: canvas.width / 2,
+        y: 50,
+        radius: 20,
+        vy: 0, // velocity
+        gravity: gravity / 60, // convert from m/s² to per frame (~60fps)
+        bounce: 0.7
+      };
+    }
+
+    initBall();
+
+    function drawBall() {
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+      ctx.fillStyle = "#00ffc8";
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    function update() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBall();
+
+      ball.vy += ball.gravity;
+      ball.y += ball.vy;
+
+      // Collision with floor
+      if (ball.y + ball.radius > canvas.height) {
+        ball.y = canvas.height - ball.radius;
+        ball.vy *= -ball.bounce;
+
+        if (Math.abs(ball.vy) < 0.5) {
+          ball.vy = 0;
+        }
+      }
+
+      // Display velocity (scaled to m/s)
+      velocityDisplay.textContent = (ball.vy).toFixed(2);
+
+      requestAnimationFrame(update);
+    }
+
+    gravitySlider.addEventListener("input", () => {
+      gravity = parseFloat(gravitySlider.value);
+      gravityLabel.textContent = gravity.toFixed(1);
+      ball.gravity = gravity / 60;
+    });
+
+    resetBtn.addEventListener("click", () => {
+      initBall();
+    });
+
+    update();
+  </script>
+</body>
+</html>

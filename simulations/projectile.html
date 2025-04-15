@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Projectile Motion | MotionVerse</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            color: #38bdf8;
+        }
+
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        label {
+            margin: 0 10px;
+            display: inline-block;
+        }
+
+        input {
+            padding: 5px;
+            width: 80px;
+            border-radius: 5px;
+            border: none;
+            margin-left: 5px;
+        }
+
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #38bdf8;
+            border: none;
+            border-radius: 8px;
+            color: #0f172a;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0ea5e9;
+        }
+
+        canvas {
+            background-color: #1e293b;
+            border: 2px solid #38bdf8;
+            margin-top: 20px;
+        }
+
+        .output-section {
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+
+        .output-section span {
+            color: #facc15;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎯 Projectile Motion - MotionVerse</h1>
+
+        <div class="input-section">
+            <label>Velocity (m/s): <input type="number" id="velocity" /></label>
+            <label>Angle (°): <input type="number" id="angle" /></label>
+            <label>Height (m): <input type="number" id="height" value="0" /></label>
+            <button onclick="simulate()">Simulate</button>
+            <button onclick="reset()">Reset</button>
+        </div>
+
+        <canvas id="projectileCanvas" width="800" height="400"></canvas>
+
+        <div class="output-section">
+            <p><strong>⏱️ Time of Flight:</strong> <span id="timeOfFlight">-</span> s</p>
+            <p>
+                <strong📈> Maximum Height:</strong> <span id="maxHeight">-</span> m
+            </p>
+            <p><strong>📏 Range:</strong> <span id="range">-</span> m</p>
+        </div>
+    </div>
+
+    <script>
+        const g = 9.81;
+        const canvas = document.getElementById("projectileCanvas");
+        const ctx = canvas.getContext("2d");
+
+        function simulate() {
+            const u = parseFloat(document.getElementById("velocity").value);
+            const angle = parseFloat(document.getElementById("angle").value) * Math.PI / 180;
+            const h = parseFloat(document.getElementById("height").value);
+
+            const ux = u * Math.cos(angle);
+            const uy = u * Math.sin(angle);
+
+            const discriminant = uy * uy + 2 * g * h;
+            const t_flight = (uy + Math.sqrt(discriminant)) / g;
+            const max_height = h + (uy * uy) / (2 * g);
+            const range = ux * t_flight;
+
+            document.getElementById("timeOfFlight").textContent = t_flight.toFixed(2);
+            document.getElementById("maxHeight").textContent = max_height.toFixed(2);
+            document.getElementById("range").textContent = range.toFixed(2);
+
+            drawProjectile(ux, uy, h, t_flight);
+        }
+
+        function drawProjectile(ux, uy, h, t_flight) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let t = 0;
+            const dt = 0.02;
+            const scale = 8;
+
+            const xOffset = 50;
+            const ground = canvas.height - 50;
+
+            ctx.strokeStyle = "#94a3b8"; // light grayish
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, ground);
+            ctx.lineTo(canvas.width, ground);
+            ctx.stroke();
+
+            function drawFrame() {
+                if (t > t_flight) return;
+
+                const x = ux * t;
+                const y = h + uy * t - 0.5 * g * t * t;
+
+                const canvasX = x * scale + xOffset;
+                const canvasY = ground - y * scale;
+
+                ctx.fillStyle = "#facc15";
+                ctx.beginPath();
+                ctx.arc(canvasX, canvasY, 4, 0, 2 * Math.PI);
+                ctx.fill();
+
+                t += dt;
+                requestAnimationFrame(drawFrame);
+            }
+
+            drawFrame();
+        }
+
+
+
+        function reset() {
+            document.getElementById("velocity").value = "";
+            document.getElementById("angle").value = "";
+            document.getElementById("height").value = "0";
+            document.getElementById("timeOfFlight").textContent = "-";
+            document.getElementById("maxHeight").textContent = "-";
+            document.getElementById("range").textContent = "-";
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+    </script>
+</body>
+
+</html>
